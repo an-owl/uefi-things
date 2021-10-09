@@ -7,7 +7,7 @@ extern crate alloc;
 
 use uefi::prelude::*;
 
-mod proto;
-mod com;
+pub mod proto;
+pub mod com;
 
 fn handle_not_success(s: Status){todo!()} //i don't really know what to do with this
