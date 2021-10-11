@@ -9,7 +9,7 @@ use crate::handle_not_success;
 
 const BUFF_SIZE: usize = 1024;
 
-pub fn read(mut sp: Serial) -> Vec<u8>{
+pub fn read(sp: &mut Serial) -> Vec<u8>{
     let mut cache= VecDeque::new();
     loop {
         let mut buff: Box<[u8; BUFF_SIZE]> = Box::new([0;BUFF_SIZE]);
