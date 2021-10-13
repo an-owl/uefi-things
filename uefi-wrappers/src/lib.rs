@@ -4,6 +4,8 @@
 
 extern crate rlibc;
 extern crate alloc;
+#[macro_use]
+extern crate log;
 
 use uefi::prelude::*;
 
