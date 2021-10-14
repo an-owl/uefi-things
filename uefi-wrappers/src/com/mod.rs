@@ -4,8 +4,6 @@ use uefi::proto::console::serial::Serial;
 use alloc::vec::Vec;
 use alloc::collections::VecDeque;
 use alloc::boxed::Box;
-use crate::handle_not_success;
-
 
 const BUFF_SIZE: usize = 1024;
 
@@ -21,7 +19,7 @@ pub fn read(sp: &mut Serial) -> Vec<u8>{
                 if r.status().is_success(){
                     cache.push_back(buff)
                 } else {
-                    handle_not_success(r.status());
+                    r.log();
                     cache.push_back(buff)
                 }
             }
@@ -29,7 +27,7 @@ pub fn read(sp: &mut Serial) -> Vec<u8>{
             Err(r) => {
                 //this arm will sort the cache append the last buffer and return from the loop
                 if r.status().is_success() == false {
-                    handle_not_success(r.status())
+                    // TODO clean this up
                 }
 
                 let mut ret = clean_cache(cache);
