@@ -4,11 +4,11 @@ use alloc::string::{String, ToString};
     /// This function returns a FileHandle from a given path relative to root.
     /// Returns error message on Err.
     /// Does not discriminate on trailing slashes
-pub fn get_file_from_path(fs: &mut SimpleFileSystem, path: &str, mode: FileMode, attributes: FileAttribute) -> Result<FileHandle,String> {
+pub fn get_file_from_path(fs: &mut SimpleFileSystem, path: &str, mode: FileMode, attributes: FileAttribute) -> GetFileStatus {
     let mut root = fs.open_volume()
         .expect("Failed to open filesystem root").log();
     if ! path.starts_with('/'){
-        return Result::Err("Invalid path".to_string());
+        return GetFileStatus::Err(uefi::Status::ABORTED);
     };
 
     let mut current_file = root.open(".",mode,attributes)
@@ -24,16 +24,24 @@ pub fn get_file_from_path(fs: &mut SimpleFileSystem, path: &str, mode: FileMode,
         match new_file_result{
             Ok(i) => {
                 new_file = i.log();
-            }
+            },
             Err(i) => {
-                error!("{}", i.status().0);
-                return Err("Failed to get file, errors logged".to_string())
+                if i.status() == uefi::Status::NOT_FOUND{
+                    return GetFileStatus::NotFound(file.to_string());
+                }
+                return GetFileStatus::Err(i.status())
             }
         }
 
-        current_file = new_file;
+        current_file = new_file
     };
 
-    return Result::Ok(current_file)
+    return GetFileStatus::Found(current_file)
 
+}
+
+pub enum GetFileStatus{
+    Found(FileHandle),
+    NotFound(String),
+    Err(uefi::Status),
 }
