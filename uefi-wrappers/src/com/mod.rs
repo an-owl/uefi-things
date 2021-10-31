@@ -42,7 +42,7 @@ pub fn read(sp: &mut Serial) -> Vec<u8>{
     }
 }
 
-fn clean_cache(mut cache: VecDeque<Box<[u8;BUFF_SIZE]>>) -> Vec<u8>{
+fn clean_cache(cache: VecDeque<Box<[u8;BUFF_SIZE]>>) -> Vec<u8>{
     let mut ret= Vec::new();
     for i in cache{
         //iterates from 0.. and appends the array to ret
