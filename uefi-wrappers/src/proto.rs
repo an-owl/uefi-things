@@ -7,7 +7,7 @@ use uefi::Status;
 /// fetches and returns given protocol
 /// Err contains the uefi::status returned
 /// Ok returns &mut protocol
-pub fn get_proto<T: Protocol>(bs: BootServices) -> Result<&'static mut T,Status>
+pub fn get_proto<T: Protocol>(bs: &BootServices) -> Result<&'static mut T,Status>
 {
     let protocol;
     return match bs.locate_protocol::<T>() {
