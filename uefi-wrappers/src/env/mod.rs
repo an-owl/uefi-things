@@ -7,7 +7,7 @@ use alloc::string::{String, ToString};
 /// This functions similarly to std::env::opts
 /// this will return a result containing Ok(iter) which will contain an iterator over the options
 /// Err will only be returned if the options cannot be converted into valid utf-8, Err will contain a Vector containing the unconverted args
-pub fn args(img: loaded_image::LoadedImage) -> Result<vec::IntoIter<String>,Vec<u8>> {
+pub fn args(img: &loaded_image::LoadedImage) -> Result<vec::IntoIter<String>,Vec<u8>> {
 
 
     let mut buff_size = 1024;
