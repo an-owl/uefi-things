@@ -1,11 +1,17 @@
+//! Contains relevant functions that would otherwise be contained within std::env
+//!
+//! with quirks
+
 use uefi::proto::loaded_image;
 use alloc::vec::Vec;
 use alloc::vec;
 use uefi::proto::loaded_image::LoadOptionsError;
 use alloc::string::{String, ToString};
 
+//TODO environment variables? IDK if that's even possible
+
 /// This functions similarly to std::env::opts
-/// this will return a result containing Ok(iter) which will contain an iterator over the options
+/// This will return a result containing Ok(iter) which will contain an iterator over the options
 /// Err will only be returned if the options cannot be converted into valid utf-8, Err will contain a Vector containing the unconverted args
 pub fn args(img: &loaded_image::LoadedImage) -> Result<vec::IntoIter<String>,Vec<u8>> {
 

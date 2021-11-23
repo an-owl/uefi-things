@@ -1,9 +1,15 @@
+//! Contains convenience functions when interacting with the filesystem
+
+//! I'd like to put new filesystem drivers here but that's not likely
+
+
 use uefi::proto::media::fs::SimpleFileSystem;
 use uefi::proto::media::file::{FileHandle, File, FileMode, FileAttribute};
 use alloc::string::{String, ToString};
-    /// This function returns a FileHandle from a given path relative to root.
-    /// Returns error message on Err.
-    /// Does not discriminate on trailing slashes
+
+/// This function returns a FileHandle from a given path relative to root.
+/// Returns error message on Err.
+/// Does not discriminate on trailing slashes
 pub fn get_file_from_path(fs: &mut SimpleFileSystem, path: &str, mode: FileMode, attributes: FileAttribute) -> GetFileStatus {
     let mut root = fs.open_volume()
         .expect("Failed to open filesystem root").log();
@@ -12,7 +18,7 @@ pub fn get_file_from_path(fs: &mut SimpleFileSystem, path: &str, mode: FileMode,
     };
 
     let mut current_file = root.open(".",mode,attributes)
-        .expect("Failed to get root handle. please open issue on github").log();
+        .expect("Failed to get root handle. This should never happen").log();
 
     let path_it = path.split('/');
 
@@ -37,11 +43,14 @@ pub fn get_file_from_path(fs: &mut SimpleFileSystem, path: &str, mode: FileMode,
     };
 
     return GetFileStatus::Found(current_file)
-
 }
 
+/// Returned by functions
 pub enum GetFileStatus{
+    /// File has been found
     Found(FileHandle),
+    /// File has not been found
     NotFound(String),
+    /// An error other than [NotFound][GetFileStatus::NotFound] has occurred
     Err(uefi::Status),
 }

@@ -1,13 +1,13 @@
-use uefi::proto::Protocol;
+//! Contains convenience functions for protocols
+
+use uefi::proto;
 use uefi::prelude::BootServices;
 use uefi::{Status, Completion};
 
 
 
-/// fetches and returns given protocol
-/// Err contains the uefi::status returned
-/// Ok returns &mut protocol
-pub fn get_proto<T: Protocol>(bs: &BootServices) -> uefi::Result<&'static mut T>
+/// Fetches and returns protocol `T`
+pub fn get_proto<T: proto::Protocol>(bs: &BootServices) -> uefi::Result<&'static mut T>
 {
     let protocol;
     return match bs.locate_protocol::<T>() {

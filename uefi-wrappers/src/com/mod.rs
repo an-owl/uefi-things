@@ -1,5 +1,6 @@
-//!contains components for handling generic serial communications
-
+//! Contains components for handling generic serial communications
+//!
+//! Pretty sure it's borked at the moment who knows if i'll fix it
 use uefi::proto::console::serial::Serial;
 use alloc::vec::Vec;
 use alloc::collections::VecDeque;
@@ -7,7 +8,11 @@ use alloc::boxed::Box;
 
 const BUFF_SIZE: usize = 1024;
 
+
+/// Reads from serial port
+/// Returns raw data
 pub fn read(sp: &mut Serial) -> Vec<u8>{
+    //TODO change return type to uefi::result
     let mut cache= VecDeque::new();
     loop {
         let mut buff: Box<[u8; BUFF_SIZE]> = Box::new([0;BUFF_SIZE]);

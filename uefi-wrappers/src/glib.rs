@@ -1,3 +1,8 @@
+//! Contains medium level graphics functions
+//!
+//! See [uefi::proto::console::gop] for detailed info
+
+
 use uefi::proto::console::gop;
 use uefi::proto::pi::mp;
 
@@ -12,22 +17,24 @@ mod lib_2d;
 //mod lib_3d;
 
 
-/// contains functionality relating to graphics
-/// also contains a Vec of full screen buffers
+/// Medium level graphics interface
+///
+/// Contains a cache of frame buffers
 
 pub struct GraphicsHandle<'boot>
 {
     gop: &'boot mut gop::GraphicsOutput<'boot>, //public for direct usage
     mp:  Option<&'boot mut mp::MpServices>, //for future use, to use MP acceleration due to the lack of hardware graphics acceleration
-    height: usize, //redundant but maybe useful
+    //redundant but maybe useful
+    height: usize,
     width: usize,
     pub buffers: Vec<Sprite>
 
 }
 
-/// contains graphical data
-/// note that when manually created it is assumed that it is not the size of the display
-/// when created within a [GraphicsHandle] is is assumed to be the full screen
+/// Contains graphical data
+///
+/// When created within a [GraphicsHandle] is is assumed to be the full screen
 
 pub struct Sprite {
     height: usize,
@@ -35,15 +42,11 @@ pub struct Sprite {
     pub data: Vec<BltPixel>,
 }
 
-
-
-
-
-
 impl<'boot> GraphicsHandle<'boot>{
 
     /// Generates a new graphics handle
-    /// MpServices will be implemented in lib_3dmp in the future
+    ///
+    /// [MpServices][uefi::proto::pi::mp::MpServices] will be implemented in lib_3dmp in the future
     pub fn new(gop: &'boot mut gop::GraphicsOutput<'boot>, mp: Option<&'boot mut mp::MpServices>,) -> GraphicsHandle<'boot>{
 
         let (height,width) = gop.current_mode_info().resolution();
@@ -61,29 +64,46 @@ impl<'boot> GraphicsHandle<'boot>{
         if buff_num > data[buff_num].len() {
             panic!();
         }
-
-
         gop.blt(BltOp::BufferToVideo { buffer: &data[buff_num], src: gop::BltOp::Full, dest: (0, 0), dims: (height, width) })
     }
 
     /// Copies sprite into framebuffer using receive_sprite()
-    /// location format is (x,y)
+    /// Location format is (x,y)
+    ///
     /// # Panics
-    /// - This function will panic if buff_num is smaller than buffers.len()
+    /// - This function will panic if buff_num is not smaller than self.buffers.len()
     fn draw_to_buff(&mut self, s: &Sprite, buff_num: usize, location: (usize,usize)) {
         assert!(buff_num < self.buffers.len());
 
         self.buffers[buff_num].receive_sprite(s,location);
+    }
 
+    fn new_buff(&mut self){
+        todo!()
+    }
+    fn insert_buff(){
+        todo!()
+    }
+    fn take_buff(&mut self) -> Sprite{
+        todo!()
+    }
 
+    fn get_resolution(&self) -> (usize,usize){
+        todo!()
+    }
+    fn get_modes(&self) -> Vec<uefi::proto::console::gop::ModeInfo>{
+        todo!()
+    }
+    fn set_mode(&mut self) -> uefi::Result{
+        todo!()
     }
 }
 
 impl Sprite {
-    ///creates new partial graphical block with given dimensions
+    /// Creates new partial graphical Sprite with given dimensions
     fn new(height: usize, width: usize) -> Sprite {
 
-        let data = alloc::vec![BltPixel::new(0,0,0);(height*width)];
+        let data = alloc::vec![BltPixel::new(0,0,0);height*width];
         return Sprite {height, width, data}
 
     }
@@ -187,8 +207,9 @@ impl Sprite {
         return Ok(());
     }
 
-    /// copies one sprite into another
-    /// location format is (x,y)
+    /// Copies one sprite into another
+    /// Location format is (x,y)
+    /// Sprites that exceed the dimensions of self will be cut off at the furthest possible point from (0,0)
     fn receive_sprite(&mut self, s: &Sprite, location: (usize, usize)){
         let (x,y) = location;
         //std copy obv
