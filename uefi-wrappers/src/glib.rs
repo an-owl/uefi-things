@@ -19,7 +19,14 @@ mod lib_2d;
 
 /// Medium level graphics interface
 ///
-/// Contains a cache of frame buffers
+/// ## buffers
+///
+/// Internally these are implemented as Vec<[Sprite]> but are always the same resolution as the screen
+///
+/// These are intended to be used as multiple screens that you may want saved,
+/// Like a background that you want to keep clean and render sprites onto
+///
+/// If you create a new buffer fro each frame you may run out of memory quickly
 
 pub struct GraphicsHandle<'boot>
 {
