@@ -12,3 +12,4 @@ pub mod proto;
 pub mod com;
 pub mod fs;
 pub mod env;
+pub mod glib;
