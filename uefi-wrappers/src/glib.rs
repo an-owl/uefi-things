@@ -7,7 +7,7 @@ use uefi::proto::console::gop;
 use uefi::proto::pi::mp;
 
 
-use uefi::proto::console::gop::{BltPixel, GraphicsOutput, BltOp};
+use uefi::proto::console::gop::{BltPixel, GraphicsOutput, BltOp, ModeInfo, Mode};
 use alloc::vec::Vec;
 use core::ops::Deref;
 
@@ -59,7 +59,7 @@ impl<'boot> GraphicsHandle<'boot>{
     ///
     /// # Panics
     /// - This function will panic if buff_num is smaller than buffers.len()
-    fn draw(&self, buff_num: usize) -> uefi::Result {
+    pub fn draw(&self, buff_num: usize) -> uefi::Result {
 
         if buff_num > data[buff_num].len() {
             panic!();
@@ -72,30 +72,47 @@ impl<'boot> GraphicsHandle<'boot>{
     ///
     /// # Panics
     /// - This function will panic if buff_num is not smaller than self.buffers.len()
-    fn draw_to_buff(&mut self, s: &Sprite, buff_num: usize, location: (usize,usize)) {
+    pub fn draw_to_buff(&mut self, s: &Sprite, buff_num: usize, location: (usize,usize)) {
         assert!(buff_num < self.buffers.len());
 
         self.buffers[buff_num].receive_sprite(s,location);
     }
 
-    fn new_buff(&mut self){
-        todo!()
-    }
-    fn insert_buff(){
-        todo!()
-    }
-    fn take_buff(&mut self) -> Sprite{
-        todo!()
+    /// Pushes a new frame buffer into self
+    pub fn new_buff(&mut self){
+         self.buffers.push(Sprite::new(self.height,self.width));
     }
 
-    fn get_resolution(&self) -> (usize,usize){
-        todo!()
+    /// Attempts to insert sprite into buffers,
+    /// Dimensions *must* be the same as the current screen resolution
+    pub fn insert_buff(&mut self, &s: Sprite) -> Result<(),()>{
+        if (s.width == self.width) & (s.height == self.height){
+            self.buffers.push(s);
+        }
+
+        return Err(());
     }
-    fn get_modes(&self) -> Vec<uefi::proto::console::gop::ModeInfo>{
-        todo!()
+
+    /// Removes and returns buffer at `index`
+    pub fn remove_buff(&mut self, index: usize) -> Sprite{
+        self.buffers.remove(index)
     }
-    fn set_mode(&mut self) -> uefi::Result{
-        todo!()
+
+    /// Gets current screen resolution as (width,height)
+    pub fn get_resolution(&self) -> (usize,usize){
+        (self.width,self.height)
+    }
+    /// Returns array of available graphics [modes][uefi::proto::console::gop::Mode]
+    pub fn get_modes(&self) -> Vec<gop::Mode>{
+        return self.gop.modes().collect()
+    }
+
+    /// sets graphics mode
+    ///
+    /// Clears all buffers because they will be the incorrect resolution
+    pub fn set_mode(&mut self, mode: gop::Mode) -> uefi::Result{
+        self.buffers.clear();
+        return self.gop.set_mode(&mode)
     }
 }
 
