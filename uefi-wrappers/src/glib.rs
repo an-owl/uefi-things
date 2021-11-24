@@ -7,10 +7,10 @@ use uefi::proto::console::gop;
 use uefi::proto::pi::mp;
 
 
-use uefi::proto::console::gop::{BltPixel, GraphicsOutput, BltOp, ModeInfo, Mode};
+use uefi::proto::console::gop::{BltPixel, BltOp, Mode};
 use alloc::vec::Vec;
 use core::ops::Deref;
-
+use uefi::Completion;
 
 
 mod lib_2d;
@@ -31,7 +31,7 @@ mod lib_2d;
 pub struct GraphicsHandle<'boot>
 {
     gop: &'boot mut gop::GraphicsOutput<'boot>, //public for direct usage
-    mp:  Option<&'boot mut mp::MpServices>, //for future use, to use MP acceleration due to the lack of hardware graphics acceleration
+    _mp:  Option<&'boot mut mp::MpServices>, //for future use, to use MP acceleration due to the lack of hardware graphics acceleration
     //redundant but maybe useful
     height: usize,
     width: usize,
@@ -57,7 +57,7 @@ impl<'boot> GraphicsHandle<'boot>{
     pub fn new(gop: &'boot mut gop::GraphicsOutput<'boot>, mp: Option<&'boot mut mp::MpServices>,) -> GraphicsHandle<'boot>{
 
         let (height,width) = gop.current_mode_info().resolution();
-        return GraphicsHandle {gop,mp,height,width,buffers: Vec::new()}
+        return GraphicsHandle {gop, _mp: mp,height,width,buffers: Vec::new()}
 
     }
 
@@ -66,12 +66,12 @@ impl<'boot> GraphicsHandle<'boot>{
     ///
     /// # Panics
     /// - This function will panic if buff_num is smaller than buffers.len()
-    pub fn draw(&self, buff_num: usize) -> uefi::Result {
+    pub fn draw(&mut self, buff_num: usize) -> uefi::Result {
 
-        if buff_num > data[buff_num].len() {
+        if buff_num > self.buffers[buff_num].len() {
             panic!();
         }
-        gop.blt(BltOp::BufferToVideo { buffer: &data[buff_num], src: gop::BltOp::Full, dest: (0, 0), dims: (height, width) })
+        self.gop.blt(BltOp::BufferToVideo { buffer: &self.buffers[buff_num], src: gop::BltRegion::Full, dest: (0, 0), dims: (self.height, self.width) })
     }
 
     /// Copies sprite into framebuffer using receive_sprite()
@@ -92,7 +92,7 @@ impl<'boot> GraphicsHandle<'boot>{
 
     /// Attempts to insert sprite into buffers,
     /// Dimensions *must* be the same as the current screen resolution
-    pub fn insert_buff(&mut self, &s: Sprite) -> Result<(),()>{
+    pub fn insert_buff(&mut self, s: Sprite) -> Result<(),()>{
         if (s.width == self.width) & (s.height == self.height){
             self.buffers.push(s);
         }
@@ -110,8 +110,8 @@ impl<'boot> GraphicsHandle<'boot>{
         (self.width,self.height)
     }
     /// Returns array of available graphics [modes][uefi::proto::console::gop::Mode]
-    pub fn get_modes(&self) -> Vec<gop::Mode>{
-        return self.gop.modes().collect()
+    pub fn get_modes(&self) -> impl ExactSizeIterator<Item = Completion<Mode>> + '_{
+        return self.gop.modes()
     }
 
     /// sets graphics mode
@@ -125,7 +125,7 @@ impl<'boot> GraphicsHandle<'boot>{
 
 impl Sprite {
     /// Creates new partial graphical Sprite with given dimensions
-    fn new(height: usize, width: usize) -> Sprite {
+    pub fn new(height: usize, width: usize) -> Sprite {
 
         let data = alloc::vec![BltPixel::new(0,0,0);height*width];
         return Sprite {height, width, data}
@@ -134,7 +134,7 @@ impl Sprite {
 
     /// Takes ppm file and moves it into frame buffer
     /// Will fit as much data into buffer as it can before exiting, does not check dimensions
-    fn read_ppm(&self, ppm_data: &[u8]) -> Result<(),&str>{
+    pub fn read_ppm(&mut self, ppm_data: &[u8]) -> Result<(),&str>{
 
         const MAGIC_NUMBER: [u8;2] = [0x50,0x53]; //ASCII for P3
         let mut data = Vec::from(ppm_data);
@@ -217,7 +217,7 @@ impl Sprite {
 
         {
             let i = 0;
-            let buff = BasicGraphics::get_dat_buff(self);
+            let buff = &mut self.data;
 
             while  (i < tail.len() * 3) & (i < tail.len()) {
                 let red   = tail[(i * 3) + 0];
