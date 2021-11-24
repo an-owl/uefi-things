@@ -259,18 +259,7 @@ impl Sprite {
         //std copy obv
         //these can both be done with modified s dimensions to ignore pixels beyond the frame
 
-        let std_copy = |s_height: usize ,s_width: usize|{
 
-            for scan in y..(y + s_height){
-
-                //contains address offset of first blt in sprites
-                let scan_start = scan * self.width;
-                let far_scan_start = scan * s_width;
-
-                //copies full scan line from s to self
-                self.data[scan_start + x..scan_start + x + s_width] = s.data[far_scan_start..far_scan_start + s_width]
-            }
-        };
 
         //checks if data is out of frame bounds before copying separate for performance reasons
         //TODO may have been made redundant requires testing
@@ -308,6 +297,26 @@ impl Sprite {
         if y + s.height > self.height{
             alt_y = (self.width - (y + s.height)) - s.height;
         }
+
+        let mut std_copy = |s_height: usize ,s_width: usize|{
+
+            for scan in y..(y + s_height){
+
+                //contains address offset of first blt in sprites
+                let scan_start = scan * self.width;
+                let far_scan_start = scan * s_width;
+
+                //copies full scan line from s to self
+                //both are of size s_width
+                //doesn't work cos it's a bitch
+                //self.data[scan_start + x..(scan_start + x + s_width)] = s.data[far_scan_start..far_scan_start + s_width]
+                //workaround
+                let count = 0;
+                for pix in &s.data[far_scan_start..far_scan_start + s_width]{
+                    self.data[scan_start+count] = *pix;
+                }
+            }
+        };
 
         std_copy(alt_x,alt_y)
 
