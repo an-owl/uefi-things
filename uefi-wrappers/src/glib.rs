@@ -132,6 +132,26 @@ impl Sprite {
 
     }
 
+    pub fn to_ppm(&self) -> Vec<u8>{
+        use alloc::string::String;
+        use core::fmt::Write;
+
+        let mut head = String::new(); //its a bit hacky but its easy
+        write!(head,"P3 {} {} 255 ",self.width,self.height).unwrap(); //colour depth always 8 bit I'm not dealing with anything else
+        let mut out = Vec::from(head.as_bytes());
+
+
+        for pix in &self.data{
+            //there's probably a better way to do this but with black magic asm fuckery i don't know if i can do it
+            //depends on the compiler i guess
+            out.push(pix.red);
+            out.push(pix.green);
+            out.push(pix.blue);
+        }
+
+        return out;
+    }
+
     /// Takes ppm file and moves it into frame buffer
     /// Will fit as much data into buffer as it can before exiting, does not check dimensions
     pub fn read_ppm(&mut self, ppm_data: &[u8]) -> Result<(),&str>{
