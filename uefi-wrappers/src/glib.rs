@@ -31,8 +31,8 @@ mod lib_2d;
 pub struct GraphicsHandle<'boot>
 {
     gop: &'boot mut gop::GraphicsOutput<'boot>, //public for direct usage
+    //TODO replace _mp with CPU multiprocessing table that handles allocating process anc configuration
     _mp:  Option<&'boot mut mp::MpServices>, //for future use, to use MP acceleration due to the lack of hardware graphics acceleration
-    //redundant but maybe useful
     height: usize,
     width: usize,
     pub buffers: Vec<Sprite>
