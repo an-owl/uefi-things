@@ -11,6 +11,7 @@ use uefi::proto::console::gop::{BltPixel, BltOp, Mode};
 use alloc::vec::Vec;
 use core::ops::Deref;
 use uefi::Completion;
+use uefi::proto::pi::mp::MpServices;
 
 
 mod lib_2d;
@@ -32,11 +33,17 @@ pub struct GraphicsHandle<'boot>
 {
     gop: &'boot mut gop::GraphicsOutput<'boot>, //public for direct usage
     //TODO replace _mp with CPU multiprocessing table that handles allocating process anc configuration
-    _mp:  Option<&'boot mut mp::MpServices>, //for future use, to use MP acceleration due to the lack of hardware graphics acceleration
+    _mp:  MpStatus<'boot>, //for future use, to use MP acceleration due to the lack of hardware graphics acceleration
     height: usize,
     width: usize,
     pub buffers: Vec<Sprite>
 
+}
+//implemented before i forgot. Disabled should only be needed for debugging acts the same way as none
+enum MpStatus<'mp> {
+    None,
+    Enabled (&'mp mut MpServices),
+    Disabled(&'mp mut MpServices),
 }
 
 /// Contains graphical data
@@ -57,7 +64,11 @@ impl<'boot> GraphicsHandle<'boot>{
     pub fn new(gop: &'boot mut gop::GraphicsOutput<'boot>, mp: Option<&'boot mut mp::MpServices>,) -> GraphicsHandle<'boot>{
 
         let (height,width) = gop.current_mode_info().resolution();
-        return GraphicsHandle {gop, _mp: mp,height,width,buffers: Vec::new()}
+        return match mp{
+            None => GraphicsHandle {gop, _mp: MpStatus::None,height,width,buffers: Vec::new()},
+            Some(mps) => GraphicsHandle {gop, _mp: MpStatus::Enabled(mps),height,width,buffers: Vec::new()}
+        };
+
 
     }
 
