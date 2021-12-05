@@ -46,7 +46,7 @@ pub fn get_file_from_path(fs: &mut SimpleFileSystem, path: &str, mode: FileMode,
 }
 
 /// Returned by functions
-pub enum GetFileStatus{
+enum GetFileStatus{
     /// File has been found
     Found(FileHandle),
     /// File has not been found
