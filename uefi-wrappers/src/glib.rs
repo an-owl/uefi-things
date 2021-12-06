@@ -7,7 +7,7 @@ use uefi::proto::console::gop;
 use uefi::proto::pi::mp;
 
 
-use uefi::proto::console::gop::{BltPixel, BltOp, Mode};
+use uefi::proto::console::gop::{BltPixel, BltOp, Mode, GraphicsOutput};
 use alloc::vec::Vec;
 use core::ops::Deref;
 use uefi::Completion;
@@ -36,9 +36,9 @@ pub struct GraphicsHandle<'boot>
     _mp:  MpStatus<'boot>, //for future use, to use MP acceleration due to the lack of hardware graphics acceleration
     height: usize,
     width: usize,
-    pub buffers: Vec<Sprite>
-
+    buffers: Vec<Sprite> //TODO make all functions that create new buffers return its index
 }
+
 //implemented before i forgot. Disabled should only be needed for debugging acts the same way as none
 enum MpStatus<'mp> {
     None,
@@ -136,7 +136,7 @@ impl<'boot> GraphicsHandle<'boot>{
 
 impl Sprite {
     /// Creates new partial graphical Sprite with given dimensions
-    pub fn new(height: usize, width: usize) -> Sprite {
+    pub fn new(width: usize, height: usize) -> Sprite {
 
         let data = alloc::vec![BltPixel::new(0,0,0);height*width];
         return Sprite {height, width, data}
