@@ -11,6 +11,10 @@ use alloc::string::{String, ToString};
 /// Returns error message on Err.
 /// Does not discriminate on trailing slashes
 pub fn get_file_from_path(fs: &mut SimpleFileSystem, path: &str, mode: FileMode, attributes: FileAttribute) -> GetFileStatus {
+    //TODO make this less shit
+
+
+
     let mut root = fs.open_volume()
         .expect("Failed to open filesystem root").log();
     if ! path.starts_with('/'){
@@ -20,10 +24,12 @@ pub fn get_file_from_path(fs: &mut SimpleFileSystem, path: &str, mode: FileMode,
     let mut current_file = root.open(".",mode,attributes)
         .expect("Failed to get root handle. This should never happen").log();
 
-    let path_it = path.split('/');
+    let path_it = path.split('/'); //first element is always blank and causes
 
-    for file in path_it{
+    for file in path_it.skip(1){
         //there is probably a better way to do this
+        info!("len {}",file.len());
+
         let new_file_result = current_file.open(file,mode,attributes);
         let new_file;
 
