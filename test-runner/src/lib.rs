@@ -1,3 +1,9 @@
+#![no_std]
+#![feature(abi_efiapi)]
+
+extern crate rlibc;
+extern crate alloc;
+
 use uefi::proto::console::text::Output;
 use uefi::prelude::*;
 
@@ -39,7 +45,6 @@ pub fn test_runner(tests: Vec<Test> ,st: &SystemTable<Boot> ){
     //run tests
     for mut test in tests{
 
-        info!("running test");
         writeln!(o, "running test {}",test.name).unwrap();
         match test.run(&st){
             TestResult::NotTested => panic!("nani?"),
@@ -91,7 +96,7 @@ pub fn test_runner(tests: Vec<Test> ,st: &SystemTable<Boot> ){
         if message.len() > 0{
             write!(o, "Gave reason {}",message).unwrap();
         }
-        writeln!(o,"");
+        writeln!(o,"").unwrap();
     }
 
     let mut num_pass = 0;
