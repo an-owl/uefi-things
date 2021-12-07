@@ -28,7 +28,7 @@ pub fn get_file_from_path(fs: &mut SimpleFileSystem, path: &str, mode: FileMode,
 
     for file in path_it.skip(1){
         //there is probably a better way to do this
-        info!("len {}",file.len());
+        trace!("len {}",file.len());
 
         let new_file_result = current_file.open(file,mode,attributes);
         let new_file;
