@@ -29,8 +29,6 @@ fn main(image: Handle, mut st: SystemTable<Boot>) -> Status {
     tests.push(test_runner::Test::new("Get_file_from_path test", tests::test_file_from_path));
     tests.push(test_runner::Test::new("Get_args test", tests::test_get_args));
 
-    writeln!(st.stdout(),"Running {} tests", tests.len()).unwrap();
-
     test_runner::test_runner(tests, image, &st);
 
     Status::SUCCESS
