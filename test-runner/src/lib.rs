@@ -46,7 +46,7 @@ pub fn test_runner(tests: Vec<Test>, table: Handle ,st: &SystemTable<Boot> ){
     for mut test in tests{
 
         writeln!(o, "running test {}",test.name).unwrap();
-        match test.run(&st){
+        match test.run(table, &st){
             TestResult::NotTested => panic!("nani?"),
             TestResult::Pass => {
                 o.set_color(Green,Black).unwrap().unwrap();
