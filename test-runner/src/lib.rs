@@ -51,17 +51,17 @@ pub fn test_runner(tests: Vec<Test>, table: Handle ,st: &SystemTable<Boot> ){
             TestResult::Pass => {
                 o.set_color(Green,Black).unwrap().unwrap();
                 writeln!(o,"ok").unwrap();
-                o.set_color(White,Black).unwrap().unwrap();
+                o.set_color(LightGray,Black).unwrap().unwrap();
             }
             TestResult::Fail(_, _) => {
                 o.set_color(Red,Black).unwrap().unwrap();
                 writeln!(o,"FAILED").unwrap();
-                o.set_color(White,Black).unwrap().unwrap();
+                o.set_color(LightGray,Black).unwrap().unwrap();
             }
             TestResult::Unknown(s, _) => {
                 o.set_color(Yellow,Black).unwrap().unwrap();
                 writeln!(o,"Unknown").unwrap();
-                o.set_color(White,Black).unwrap().unwrap();
+                o.set_color(LightGray,Black).unwrap().unwrap();
                 writeln!(o,"Status: {:?}    Test may need to be manually verified",s).unwrap();
             }
         }
@@ -91,7 +91,7 @@ pub fn test_runner(tests: Vec<Test>, table: Handle ,st: &SystemTable<Boot> ){
         } else {
             panic!()
         }
-        o.set_color(White,Black).unwrap().unwrap();
+        o.set_color(LightGray,Black).unwrap().unwrap();
         write!(o,"with status {:?}." ,status).unwrap();
         if message.len() > 0{
             write!(o, "Gave reason {}",message).unwrap();
@@ -118,16 +118,16 @@ pub fn test_runner(tests: Vec<Test>, table: Handle ,st: &SystemTable<Boot> ){
     write!(o, " {} tests", num_pass).unwrap();
     o.set_color(Green,Black).unwrap().unwrap();
     write!(o, " PASSED ").unwrap();
-    o.set_color(White,Black).unwrap().unwrap();
+    o.set_color(LightGray,Black).unwrap().unwrap();
 
     write!(o, "{} tests", num_fail).unwrap();
     o.set_color(Red,Black).unwrap().unwrap();
     write!(o, " FAILED ").unwrap();
-    o.set_color(White,Black).unwrap().unwrap();
+    o.set_color(LightGray,Black).unwrap().unwrap();
 
     write!(o, "{} tests", num_unkn).unwrap();
     o.set_color(Yellow,Black).unwrap().unwrap();
     write!(o, " UNKNOWN ").unwrap();
-    o.set_color(White,Black).unwrap().unwrap();
+    o.set_color(LightGray,Black).unwrap().unwrap();
     writeln!(o,"").unwrap();
 }
