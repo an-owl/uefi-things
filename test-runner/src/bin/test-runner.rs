@@ -103,7 +103,7 @@ pub mod tests{
         writeln!(o, "\ngot {} args", args.len()).unwrap();
 
         return if args.len() == 0 {
-            Fail(Status::NOT_FOUND, "No args found please ensure some were given")
+            Fail(Status::NOT_FOUND, "No args found, will always fail if not run from a shell")
         } else {
             Pass
         }
