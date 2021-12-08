@@ -1,6 +1,6 @@
 //! Contains convenience functions for protocols
 
-use uefi::proto;
+use uefi::{proto, Handle};
 use uefi::prelude::BootServices;
 use uefi::{Status, Completion};
 
@@ -14,8 +14,23 @@ pub fn get_proto<T: proto::Protocol>(bs: &BootServices) -> uefi::Result<&'static
         Ok(proto) => {
             let proto = proto.log();
             protocol = unsafe { &mut *proto.get() };
+            
+            Ok(Completion::new(Status::SUCCESS,protocol))
+        }
+        Err(i) => {
+            Err(i)
+        }
+    };
+}
 
-            //TODO return the actual status instead of just Success
+pub fn get_proto_handle<T: proto::Protocol>(image: Handle, bs: &BootServices) -> uefi::Result<&'static mut T>
+{
+    let protocol;
+    return match bs.handle_protocol(image) {
+        Ok(proto) => {
+            let proto = proto.log();
+            protocol = unsafe { &mut *proto.get() };
+
             Ok(Completion::new(Status::SUCCESS,protocol))
         }
         Err(i) => {
