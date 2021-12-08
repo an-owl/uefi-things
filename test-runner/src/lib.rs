@@ -22,21 +22,21 @@ pub enum TestResult{
 
 pub struct Test{
     pub name: &'static str,
-    test_fn: fn(&SystemTable<Boot>) -> TestResult,
+    test_fn: fn(Handle, &SystemTable<Boot>) -> TestResult,
     pub test_state: TestResult,
 }
 
 impl Test{
-    pub fn new(name: &'static str, test_fn: fn(&SystemTable<Boot>) -> TestResult) -> Self{
+    pub fn new(name: &'static str, test_fn: fn(Handle, &SystemTable<Boot>) -> TestResult) -> Self{
         return Self{name, test_fn,test_state: TestResult::NotTested}
     }
-    pub fn run(&mut self, st: &SystemTable<Boot>) -> TestResult{
-        self.test_state = (self.test_fn)(st);
+    pub fn run(&mut self, handle: Handle, st: &SystemTable<Boot>) -> TestResult{
+        self.test_state = (self.test_fn)(handle.clone(), st);
         return self.test_state
     }
 }
 
-pub fn test_runner(tests: Vec<Test> ,st: &SystemTable<Boot> ){
+pub fn test_runner(tests: Vec<Test>, table: Handle ,st: &SystemTable<Boot> ){
     use uefi::proto::console::text::Color::*;
     use uefi_wrappers::proto::get_proto;
     let mut test_comp = Vec::new();
