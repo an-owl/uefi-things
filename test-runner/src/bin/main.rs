@@ -12,6 +12,7 @@ extern crate log;
 use uefi::prelude::*;
 use alloc::vec::Vec;
 use uefi::proto::console::text::Output;
+use core::fmt::Write;
 
 #[entry]
 fn main(_image: Handle, mut st: SystemTable<Boot>) -> Status {
@@ -22,7 +23,12 @@ fn main(_image: Handle, mut st: SystemTable<Boot>) -> Status {
     info!("successfully initialized");
 
     let mut tests = Vec::new();
+
+
     tests.push(test_runner::Test::new("Get_file_from_path test", tests::test_file_from_path));
+    tests.push(test_runner::Test::new("Get_args test", tests::test_get_args));
+
+    writeln!(st.stdout(),"Running {} tests", tests.len()).unwrap();
 
     test_runner::test_runner(tests, &st);
 
@@ -32,13 +38,17 @@ fn main(_image: Handle, mut st: SystemTable<Boot>) -> Status {
 
 
 pub mod tests{
-    use test_runner::*;
+    use core::fmt::Write;
     use uefi::prelude::*;
     use uefi_wrappers::fs::GetFileStatus;
     use uefi::proto::media::file::{FileMode, FileAttribute};
     use uefi_wrappers::proto::get_proto;
     use test_runner::TestResult;
     use test_runner::TestResult::*;
+    use uefi::proto::loaded_image::LoadedImage;
+    use alloc::string::String;
+    use alloc::vec::Vec;
+    use uefi::proto::console::text::Output;
 
 
     pub fn test_file_from_path(st: &SystemTable<Boot>) -> TestResult{
@@ -66,5 +76,23 @@ pub mod tests{
         }
 
         Pass
+    }
+
+    pub fn test_get_args(st: &SystemTable<Boot>) -> TestResult{
+        let image = get_proto::<LoadedImage>(st.boot_services()).unwrap().unwrap();
+        let o = get_proto::<Output>(st.boot_services()).unwrap().unwrap();
+        let args: Vec<String> = uefi_wrappers::env::args(image).unwrap().collect();
+
+        for arg in &args {
+            writeln!(o,"{}",arg).unwrap()
+        }
+
+        writeln!(o, "\n got {} args", args.len()).unwrap();
+
+        return if args.len() == 0 {
+            Fail(Status::NOT_FOUND, "No args frond please ensure some were given")
+        } else {
+            Pass
+        }
     }
 }
