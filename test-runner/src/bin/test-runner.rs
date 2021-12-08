@@ -7,6 +7,7 @@ extern crate rlibc;
 extern crate alloc;
 #[macro_use]
 extern crate log;
+extern crate uefi;
 
 
 use uefi::prelude::*;
@@ -15,7 +16,7 @@ use uefi::proto::console::text::Output;
 use core::fmt::Write;
 
 #[entry]
-fn main(_image: Handle, mut st: SystemTable<Boot>) -> Status {
+fn main(image: Handle, mut st: SystemTable<Boot>) -> Status {
     uefi_services::init(&mut st).unwrap().unwrap(); //ur fucked if this fails anyway
     let mut log = unsafe {uefi::logger::Logger::new(uefi_wrappers::proto::get_proto::<Output>(st.boot_services()).unwrap().unwrap())};
     log.disable();
@@ -30,7 +31,7 @@ fn main(_image: Handle, mut st: SystemTable<Boot>) -> Status {
 
     writeln!(st.stdout(),"Running {} tests", tests.len()).unwrap();
 
-    test_runner::test_runner(tests, &st);
+    test_runner::test_runner(tests, image, &st);
 
     Status::SUCCESS
 }
@@ -42,7 +43,7 @@ pub mod tests{
     use uefi::prelude::*;
     use uefi_wrappers::fs::GetFileStatus;
     use uefi::proto::media::file::{FileMode, FileAttribute};
-    use uefi_wrappers::proto::get_proto;
+    use uefi_wrappers::proto::{get_proto,get_proto_handle};
     use test_runner::TestResult;
     use test_runner::TestResult::*;
     use uefi::proto::loaded_image::LoadedImage;
@@ -51,7 +52,7 @@ pub mod tests{
     use uefi::proto::console::text::Output;
 
 
-    pub fn test_file_from_path(st: &SystemTable<Boot>) -> TestResult{
+    pub fn test_file_from_path(_handle: Handle, st: &SystemTable<Boot>) -> TestResult{
         use uefi::proto::media::fs::SimpleFileSystem;
         use uefi_wrappers::fs::get_file_from_path;
 
@@ -78,19 +79,31 @@ pub mod tests{
         Pass
     }
 
-    pub fn test_get_args(st: &SystemTable<Boot>) -> TestResult{
-        let image = get_proto::<LoadedImage>(st.boot_services()).unwrap().unwrap();
+    pub fn test_get_args(table: Handle, st: &SystemTable<Boot>) -> TestResult{
+        use uefi::proto::console::text::Color::*;
         let o = get_proto::<Output>(st.boot_services()).unwrap().unwrap();
+        let image = get_proto_handle::<LoadedImage>(table,&st.boot_services()).unwrap().unwrap();
         let args: Vec<String> = uefi_wrappers::env::args(image).unwrap().collect();
 
+
+
+        let mut buff: Vec<u8> = Vec::new();
+        buff.resize(512,0);
+        let args_str = image.load_options(&mut *buff).unwrap();
+        writeln!(o,"got options string as").unwrap();
+        writeln!(o,"{}\n", args_str).unwrap();
+
+        o.set_color(LightBlue,Black);
         for arg in &args {
             writeln!(o,"{}",arg).unwrap()
         }
+        o.set_color(LightGray,Black);
 
-        writeln!(o, "\n got {} args", args.len()).unwrap();
+
+        writeln!(o, "\ngot {} args", args.len()).unwrap();
 
         return if args.len() == 0 {
-            Fail(Status::NOT_FOUND, "No args frond please ensure some were given")
+            Fail(Status::NOT_FOUND, "No args found please ensure some were given")
         } else {
             Pass
         }
