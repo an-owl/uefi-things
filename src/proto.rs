@@ -14,7 +14,7 @@ pub fn get_proto<T: proto::Protocol>(bs: &BootServices) -> uefi::Result<&'static
         Ok(proto) => {
             let proto = proto.log();
             protocol = unsafe { &mut *proto.get() };
-            
+
             Ok(Completion::new(Status::SUCCESS,protocol))
         }
         Err(i) => {
