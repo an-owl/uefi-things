@@ -92,7 +92,7 @@ pub fn test_runner(tests: Vec<Test>, table: Handle ,st: &SystemTable<Boot> ){
             panic!()
         }
         o.set_color(LightGray,Black).unwrap().unwrap();
-        write!(o,"with status {:?}." ,status).unwrap();
+        write!(o,"with status {:?}. " ,status).unwrap();
         if message.len() > 0{
             write!(o, "Gave reason {}",message).unwrap();
         }
