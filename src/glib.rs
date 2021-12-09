@@ -63,7 +63,7 @@ impl<'boot> GraphicsHandle<'boot>{
     /// [MpServices][uefi::proto::pi::mp::MpServices] will be implemented in lib_3dmp in the future
     pub fn new(gop: &'boot mut gop::GraphicsOutput<'boot>, mp: Option<&'boot mut mp::MpServices>,) -> GraphicsHandle<'boot>{
 
-        let (height,width) = gop.current_mode_info().resolution();
+        let (width,height) = gop.current_mode_info().resolution();
         return match mp{
             None => GraphicsHandle {gop, _mp: MpStatus::None,height,width,buffers: Vec::new()},
             Some(mps) => GraphicsHandle {gop, _mp: MpStatus::Enabled(mps),height,width,buffers: Vec::new()}
