@@ -106,6 +106,7 @@ impl<'boot> GraphicsHandle<'boot>{
     pub fn insert_buff(&mut self, s: Sprite) -> Result<(),()>{
         if (s.width == self.width) & (s.height == self.height){
             self.buffers.push(s);
+            return Ok(())
         }
 
         return Err(());
