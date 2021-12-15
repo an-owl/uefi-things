@@ -4,8 +4,10 @@
 
 
 use uefi::proto::media::fs::SimpleFileSystem;
-use uefi::proto::media::file::{FileHandle, File, FileMode, FileAttribute};
+use uefi::proto::media::file::{FileHandle, File, FileMode, FileAttribute, RegularFile, FileType};
 use alloc::string::{String, ToString};
+use alloc::vec::Vec;
+use uefi::Status;
 
 /// This function returns a FileHandle from a given path relative to root.
 /// Returns error message on Err.
@@ -39,6 +41,7 @@ pub fn get_file_from_path(fs: &mut SimpleFileSystem, path: &str, mode: FileMode,
             },
             Err(i) => {
                 if i.status() == uefi::Status::NOT_FOUND{
+                    //TODO return whole path until missing file
                     return GetFileStatus::NotFound(file.to_string());
                 }
                 return GetFileStatus::Err(i.status())
@@ -49,6 +52,17 @@ pub fn get_file_from_path(fs: &mut SimpleFileSystem, path: &str, mode: FileMode,
     };
 
     return GetFileStatus::Found(current_file)
+}
+
+///Reads whole file
+pub fn read_file(mut file: RegularFile) -> Vec<u8> {
+    //get file size
+    let mut buffer = Vec::new();
+    file.set_position(RegularFile::END_OF_FILE); //TODO handle this
+    buffer.resize(file.get_position().unwrap().unwrap() as usize,0);
+    file.set_position(0); //TODO handle this
+    file.read(&mut buffer); //TODO handle this
+    buffer
 }
 
 /// Returned by functions
