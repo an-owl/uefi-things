@@ -82,7 +82,7 @@ impl<'boot> GraphicsHandle<'boot>{
         if buff_num > self.buffers[buff_num].len() {
             panic!();
         }
-        self.gop.blt(BltOp::BufferToVideo { buffer: &self.buffers[buff_num], src: gop::BltRegion::Full, dest: (0, 0), dims: (self.height, self.width) })
+        self.gop.blt(BltOp::BufferToVideo { buffer: &self.buffers[buff_num], src: gop::BltRegion::Full, dest: (0, 0), dims: (self.width, self.height) })
     }
 
     /// Copies sprite into framebuffer using receive_sprite()
@@ -166,9 +166,13 @@ impl Sprite {
 
     /// Takes ppm file and moves it into frame buffer
     /// Will fit as much data into buffer as it can before exiting, does not check dimensions
-    pub fn read_ppm(&mut self, ppm_data: &[u8]) -> Result<(),&str>{
+    pub fn read_ppm(&mut self, ppm_data: &[u8]) -> Result<(),&'static str>{
 
-        const MAGIC_NUMBER: [u8;2] = [0x50,0x53]; //ASCII for P3
+        const MAGIC_NUMBER: [u8;2] = [0x50,0x36]; //ASCII for P6
+
+
+
+
         let mut data = Vec::from(ppm_data);
 
         if data.len() < 9 {
@@ -179,10 +183,32 @@ impl Sprite {
             return Err("Bad Magic");
         }
 
-        data[0] = 0;
-        data[1] = 1;
-        //removes unhelpful data to simplify following loop
+        let body_start = Sprite::ppm_head(ppm_data);
 
+        let tail = Vec::from(&data[body_start..]);
+        //parse head maybe?
+        //atm assume colours are 255
+
+        {
+            let mut i = 0;
+            let buff = &mut self.data;
+
+            while  (i < buff.len()) && (2 + (i * 3) < tail.len()) {
+                let red   = tail[(i * 3) + 0];
+                let green = tail[(i * 3) + 1];
+                let blue  = tail[(i * 3) + 2];
+
+                buff[i] = BltPixel::new(red,green,blue);
+                i += 1;
+            }
+
+        }
+        return Ok(());
+    }
+
+
+    ///finds the end of ppm head, returns 0 on error
+    fn ppm_head(data: &[u8]) -> usize{
 
         let find = |find: u8, search: &[u8]| -> usize {
             let mut count: usize = 0;
@@ -196,72 +222,38 @@ impl Sprite {
             return count;
         };
 
-        //strip comments
-        {
-            let mut i = 0;
-            while i < data.len(){
-                if data[i] == '#' as u8{
-                    find('\n' as u8, &data[i..]);
 
-                    for pos in 0..find('\n' as u8, &data[i..]){ //fuck i miss regex
-                        data[pos] = 0;
-                    }
-                }
-                i += 1;
-            }
-        };
+        let mut i = 2; //skips magic
+        let mut in_group = false;
+        let mut group = 0;
 
-        //get head
-        let (_head,tail) = {
-            let whitespace = " \n\t\0".as_bytes();
-            let mut group = 0;
-            let mut in_group = false;
-            let mut count = 0;
-            for i in &data{
+        while i < data.len(){
 
-                if group == 4{
-                    break
-                }
-
-                if (whitespace.contains(i)) & (in_group == false){ //triggers on entry to whitespace segment
-                    in_group = true;
-                    group += 1;
-
-                } else if (!whitespace.contains(i)) & (in_group == true){ //triggers after exit from whitespace segment (    HERE)
-                    in_group = false;
-                }
-                count += 1;
+            if group == 3 && in_group == false{
+                //exit condition
+                return i
             }
 
-            if data[count..].len() % 3 != 0 {
-                // TODO check for extra whitespaces
-                return Err("bad_data_len")
+            if in_group && data[i].is_ascii_whitespace() {
+                //end of group
+                in_group = false
+
+            } else if data[i] == b'#' {
+                //finds and skips comments
+                i += find(b'\n', &data[i..]);
+                continue
+
+            } else if !in_group && data[i].is_ascii_digit(){
+                //start fo group
+                in_group = true;
+                group += 1;
             }
-
-
-
-            data.split_at(count)
-
-        };
-
-        //parse head maybe?
-        //atm assume colours are 255
-
-        {
-            let i = 0;
-            let buff = &mut self.data;
-
-            while  (i < tail.len() * 3) & (i < tail.len()) {
-                let red   = tail[(i * 3) + 0];
-                let green = tail[(i * 3) + 1];
-                let blue  = tail[(i * 3) + 2];
-
-                buff[i] = BltPixel::new(red,green,blue);
-            }
+            i += 1
 
         }
-        return Ok(());
+        0
     }
+
 
     /// Copies one sprite into another
     /// Location format is (x,y)
