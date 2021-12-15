@@ -60,3 +60,20 @@ pub enum GetFileStatus{
     /// An error other than [NotFound][GetFileStatus::NotFound] has occurred
     Err(uefi::Status),
 }
+
+impl GetFileStatus {
+
+    /// Gets [FileType][uefi::proto::media::file::file::FileType] from [GetFileStatus]
+    pub fn into_type(self) -> Result<FileType,Status>{
+        return match self{
+            GetFileStatus::Found(f) => {
+                //TODO remove unwrap
+                Ok(f.into_type().unwrap().unwrap())
+            }
+            GetFileStatus::NotFound(_) => {
+                Err(Status::NOT_FOUND)
+            }
+            GetFileStatus::Err(e) => Err(e)
+        }
+    }
+}
