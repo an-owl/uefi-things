@@ -13,8 +13,6 @@ extern crate uefi;
 use uefi::prelude::*;
 use alloc::vec::Vec;
 use uefi::proto::console::text::Output;
-use core::fmt::Write;
-
 #[entry]
 fn main(image: Handle, mut st: SystemTable<Boot>) -> Status {
     uefi_services::init(&mut st).unwrap().unwrap(); //ur fucked if this fails anyway
@@ -93,11 +91,11 @@ pub mod tests{
         writeln!(o,"got options string as").unwrap();
         writeln!(o,"{}\n", args_str).unwrap();
 
-        o.set_color(LightBlue,Black);
+        o.set_color(LightBlue,Black).unwrap().unwrap();
         for arg in &args {
             writeln!(o,"{}",arg).unwrap()
         }
-        o.set_color(LightGray,Black);
+        o.set_color(LightGray,Black).unwrap().unwrap();
 
 
         writeln!(o, "\ngot {} args", args.len()).unwrap();
