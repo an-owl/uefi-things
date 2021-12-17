@@ -10,7 +10,7 @@ use uefi::proto::pi::mp;
 use uefi::proto::console::gop::{BltPixel, BltOp, Mode, GraphicsOutput};
 use alloc::vec::Vec;
 use core::ops::Deref;
-use uefi::Completion;
+use uefi::{Completion, Status};
 use uefi::proto::pi::mp::MpServices;
 
 
@@ -85,7 +85,7 @@ impl<'boot> GraphicsHandle<'boot>{
         self.gop.blt(BltOp::BufferToVideo { buffer: &self.buffers[buff_num], src: gop::BltRegion::Full, dest: (0, 0), dims: (self.width, self.height) })
     }
 
-    /// Copies sprite into framebuffer using receive_sprite()
+    /// Copies sprite into framebuffer using render_sprite()
     /// Location format is (x,y)
     ///
     /// # Panics
@@ -93,7 +93,7 @@ impl<'boot> GraphicsHandle<'boot>{
     pub fn draw_to_buff(&mut self, s: &Sprite, buff_num: usize, location: (usize,usize)) {
         assert!(buff_num < self.buffers.len());
 
-        self.buffers[buff_num].receive_sprite(s,location);
+        self.buffers[buff_num].render_sprite(s, location);
     }
 
     /// Pushes a new frame buffer into self
@@ -164,6 +164,11 @@ impl Sprite {
         return out;
     }
 
+    ///returns sprite resolution as Width x Height
+    pub fn resolution(&self) -> (usize,usize){
+        (self.width,self.height)
+    }
+
     /// Takes ppm file and moves it into frame buffer
     /// Will fit as much data into buffer as it can before exiting, does not check dimensions
     pub fn read_ppm(&mut self, ppm_data: &[u8]) -> Result<(),&'static str>{
@@ -171,9 +176,7 @@ impl Sprite {
         const MAGIC_NUMBER: [u8;2] = [0x50,0x36]; //ASCII for P6
 
 
-
-
-        let mut data = Vec::from(ppm_data);
+        let mut data = Vec::from(ppm_data); //TODO change to uefi::Status
 
         if data.len() < 9 {
             return Err("file too small")
@@ -209,6 +212,7 @@ impl Sprite {
 
     ///finds the end of ppm head, returns 0 on error
     fn ppm_head(data: &[u8]) -> usize{
+        //TODO Return header data
 
         let find = |find: u8, search: &[u8]| -> usize {
             let mut count: usize = 0;
@@ -258,7 +262,7 @@ impl Sprite {
     /// Copies one sprite into another
     /// Location format is (x,y)
     /// Sprites that exceed the dimensions of self will be cut off at the furthest possible point from (0,0)
-    fn receive_sprite(&mut self, s: &Sprite, location: (usize, usize)){
+    pub fn render_sprite(&mut self, s: &Sprite, location: (usize, usize)){
         let (x,y) = location;
         //std copy obv
         //these can both be done with modified s dimensions to ignore pixels beyond the frame
@@ -304,25 +308,21 @@ impl Sprite {
 
         let mut std_copy = |s_height: usize ,s_width: usize|{
 
-            for scan in y..(y + s_height){
+            for scan in 0..s_height{
 
                 //contains address offset of first blt in sprites
-                let scan_start = scan * self.width;
-                let far_scan_start = scan * s_width;
+                let scan_start = (scan+y) * self.width; //address for pix 0 in current scanline
+                let far_scan_start = scan * s_width; //same as above but for s
 
-                //copies full scan line from s to self
-                //both are of size s_width
-                //doesn't work cos it's a bitch
-                //self.data[scan_start + x..(scan_start + x + s_width)] = s.data[far_scan_start..far_scan_start + s_width]
-                //workaround
-                let count = 0;
-                for pix in &s.data[far_scan_start..far_scan_start + s_width]{
-                    self.data[scan_start+count] = *pix;
-                }
+                info!("scan: {}, addr: {}",scan,scan_start);
+
+                //info!("scan: {}, addr: {}",scan,far_scan_start);
+
+                self.data[scan_start + x..(scan_start + x + s_width)].copy_from_slice(&s.data[far_scan_start..far_scan_start + s_width])
             }
         };
 
-        std_copy(alt_x,alt_y)
+        std_copy(alt_y,alt_x)
 
     }
 }
