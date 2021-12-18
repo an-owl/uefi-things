@@ -31,7 +31,7 @@ mod lib_2d;
 
 pub struct GraphicsHandle<'boot>
 {
-    gop: &'boot mut gop::GraphicsOutput<'boot>, //public for direct usage
+    pub gop: &'boot mut gop::GraphicsOutput<'boot>, //public for direct usage
     //TODO replace _mp with CPU multiprocessing table that handles allocating process anc configuration
     mp:  MpStatus<'boot>, //for future use, to use MP acceleration due to the lack of hardware graphics acceleration
     height: usize,
