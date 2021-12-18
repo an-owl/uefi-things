@@ -144,11 +144,11 @@ pub mod tests {
 
 
         g.insert_buff(bg);
-        g.draw(0);
+        g.draw(0).unwrap().unwrap();
         st.boot_services().stall(1*SECOND);
 
         g.draw_to_buff(&fg,0,(0,0));
-        g.draw(0);
+        g.draw(0).unwrap().unwrap();
         st.boot_services().stall(1*SECOND);
 
         let (mut width,mut height) = g.get_resolution(); //sets cords to place in bottom right corner
@@ -159,7 +159,7 @@ pub mod tests {
         st.boot_services().stall(3*SECOND);
         g.draw_to_buff(&fg,0,(width,height));
 
-        g.draw(0);
+        g.draw(0).unwrap().unwrap();
         st.boot_services().stall(3*SECOND);
 
         Unknown(Status::SUCCESS,"Requires human verification")
