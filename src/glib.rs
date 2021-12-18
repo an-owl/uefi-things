@@ -299,36 +299,6 @@ impl Sprite {
     /// Sprites that exceed the dimensions of self will be cut off at the furthest possible point from (0,0)
     pub fn render_sprite(&mut self, s: &Sprite, location: (usize, usize)){
         let (x,y) = location;
-        //std copy obv
-        //these can both be done with modified s dimensions to ignore pixels beyond the frame
-
-
-
-        //checks if data is out of frame bounds before copying separate for performance reasons
-        //TODO may have been made redundant requires testing
-        /*let cautious_copy = {
-            if (x + s.width) > self.width{
-                let altered_x = self.width - (x + s.width);
-
-            }
-            for scan in y..(y + s.height){
-                if scan > self.height{
-                    break
-                }
-
-                //contains address offset of first blt in sprites
-                let scan_start = scan * self.width;
-                let far_scan_start = scan * s.width;
-
-                //is tail past scan line end if yes copy until when?
-                //elevate out of loop?
-
-
-
-                //copies full scan line from s to self
-                self.data[scan_start + x..scan_start + x + s.width] = s.data[far_scan_start..far_scan_start + s.width]
-            }
-        };*/
 
         let mut alt_x = s.width;
         let mut alt_y = s.height;
