@@ -33,7 +33,7 @@ pub struct GraphicsHandle<'boot>
 {
     gop: &'boot mut gop::GraphicsOutput<'boot>, //public for direct usage
     //TODO replace _mp with CPU multiprocessing table that handles allocating process anc configuration
-    _mp:  MpStatus<'boot>, //for future use, to use MP acceleration due to the lack of hardware graphics acceleration
+    mp:  MpStatus<'boot>, //for future use, to use MP acceleration due to the lack of hardware graphics acceleration
     height: usize,
     width: usize,
     buffers: Vec<Sprite> //TODO make all functions that create new buffers return its index
@@ -65,8 +65,8 @@ impl<'boot> GraphicsHandle<'boot>{
 
         let (width,height) = gop.current_mode_info().resolution();
         return match mp{
-            None => GraphicsHandle {gop, _mp: MpStatus::None,height,width,buffers: Vec::new()},
-            Some(mps) => GraphicsHandle {gop, _mp: MpStatus::Enabled(mps),height,width,buffers: Vec::new()}
+            None => GraphicsHandle {gop, mp: MpStatus::None,height,width,buffers: Vec::new()},
+            Some(mps) => GraphicsHandle {gop, mp: MpStatus::Enabled(mps),height,width,buffers: Vec::new()}
         };
 
 
@@ -132,6 +132,41 @@ impl<'boot> GraphicsHandle<'boot>{
     pub fn set_mode(&mut self, mode: gop::Mode) -> uefi::Result{
         self.buffers.clear();
         return self.gop.set_mode(&mode)
+    }
+
+    /// Enables/Disables multiprocessing when available
+    /// noes nothing on erroneous input.
+    pub fn change_mp(self,state: bool) -> Self{
+        return match self.mp {
+            MpStatus::Enabled(mp) if !state => {
+                Self{
+                    gop: self.gop,
+                    mp: MpStatus::Disabled(mp),
+                    buffers: self.buffers,
+                    height: self.height,
+                    width: self.width,
+                }
+            }
+            MpStatus::Disabled(mp) if state => {
+                Self{
+                    gop: self.gop,
+                    mp: MpStatus::Enabled(mp),
+                    buffers: self.buffers,
+                    height: self.height,
+                    width: self.width,
+                }
+            }
+            _ => {
+                Self{
+                    gop: self.gop,
+                    mp: self.mp,
+                    buffers: self.buffers,
+                    height: self.height,
+                    width: self.width,
+
+                }
+            }
+        }
     }
 }
 
