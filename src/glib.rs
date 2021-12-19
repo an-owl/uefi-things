@@ -13,8 +13,8 @@ use core::ops::Deref;
 use uefi::{Completion, Status};
 use uefi::proto::pi::mp::MpServices;
 
-
-mod lib_2d;
+//will be re added at some point
+//mod lib_2d;
 //mod lib_3d;
 
 
