@@ -5,6 +5,7 @@ edition = "2018"
 exclude = [
     "test-runner/**"
 ]
+license = "GPL-3.0-or-later"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -17,6 +18,4 @@ log = { version = "0.4.14", default-features = false }
 [workspace]
 members = [
     "test-runner"
-
-
 ]
