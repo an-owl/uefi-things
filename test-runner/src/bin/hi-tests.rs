@@ -40,10 +40,10 @@ pub mod tests {
     use uefi::proto::console::gop::GraphicsOutput;
     use uefi_wrappers::glib::{GraphicsHandle, Sprite};
     use uefi::proto::media::fs::SimpleFileSystem;
-    use uefi_wrappers::fs::{read_file, get_file_from_path};
+    use uefi_wrappers::fs::read_file;
     use uefi::proto::media::file::FileType;
     use uefi::proto::console::text::Output;
-    use alloc::string::ToString;
+
     const SECOND: usize = 1000000;
     pub fn test_graphics_things(_table: Handle, st: &SystemTable<Boot>) -> TestResult{
         const WIDTH: usize = 800;
@@ -68,7 +68,7 @@ pub mod tests {
                                                     uefi::proto::media::file::FileAttribute::empty())
             .into_type().unwrap(){
             FileType::Regular(f) => {
-                read_file(f)
+                read_file(f).unwrap().unwrap()
             }
             FileType::Dir(_) => {
 
@@ -111,7 +111,7 @@ pub mod tests {
                                                     uefi::proto::media::file::FileAttribute::empty())
             .into_type().unwrap(){
             FileType::Regular(f) => {
-                read_file(f)
+                read_file(f).unwrap().unwrap()
             }
             FileType::Dir(_) => {
 
@@ -130,7 +130,7 @@ pub mod tests {
                                                     uefi::proto::media::file::FileAttribute::empty())
             .into_type().unwrap(){
             FileType::Regular(f) => {
-                read_file(f)
+                read_file(f).unwrap().unwrap()
             }
             FileType::Dir(_) => {
 
@@ -143,7 +143,7 @@ pub mod tests {
 
 
 
-        g.insert_buff(bg);
+        g.insert_buff(bg).unwrap();
         g.draw(0).unwrap().unwrap();
         st.boot_services().stall(1*SECOND);
 

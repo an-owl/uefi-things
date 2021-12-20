@@ -51,8 +51,6 @@ pub mod tests{
 
 
     pub fn test_file_from_path(_handle: Handle, st: &SystemTable<Boot>) -> TestResult{
-        use uefi::proto::media::fs::SimpleFileSystem;
-        use uefi_wrappers::fs::get_file_from_path;
 
         let mut fs = get_proto::<SimpleFileSystem>(st.boot_services()).unwrap().unwrap();
         match get_file_from_path(&mut fs, "/test-img.ppm", FileMode::Read, FileAttribute::empty()){
@@ -107,14 +105,14 @@ pub mod tests{
         }
 
     }
-    pub fn test_read_file(_image: Handle, mut st:  &SystemTable<Boot>) -> TestResult{
+    pub fn test_read_file(_image: Handle, st:  &SystemTable<Boot>) -> TestResult{
         use uefi::proto::media::file;
         use uefi::proto::console::text::Color::*;
         let fs = get_proto::<SimpleFileSystem>(&st.boot_services()).unwrap().unwrap();
         let o = get_proto::<Output>(st.boot_services()).unwrap().unwrap();
         let file_data = match get_file_from_path(fs, "/imp.nsh",file::FileMode::Read,file::FileAttribute::empty()).into_type().unwrap(){
             FileType::Regular(f) => {
-                uefi_wrappers::fs::read_file(f)
+                uefi_wrappers::fs::read_file(f).unwrap().unwrap()
             }
             FileType::Dir(_) => {
                 return Fail(Status::LOAD_ERROR,"Found Directory")
@@ -123,9 +121,9 @@ pub mod tests{
 
         if let Ok(file_str) = core::str::from_utf8(&file_data) {
 
-            o.set_color(LightBlue, Black);
-            writeln!(o,"{}", file_str);
-            o.set_color(LightGray, Black);
+            o.set_color(LightBlue, Black).unwrap().unwrap();
+            writeln!(o,"{}", file_str).unwrap();
+            o.set_color(LightGray, Black).unwrap().unwrap();
         }
 
         Pass
