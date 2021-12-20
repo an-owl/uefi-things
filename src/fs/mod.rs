@@ -55,14 +55,18 @@ pub fn get_file_from_path(fs: &mut SimpleFileSystem, path: &str, mode: FileMode,
 }
 
 ///Reads whole file
-pub fn read_file(mut file: RegularFile) -> Vec<u8> {
+pub fn read_file(mut file: RegularFile) -> uefi::Result<Vec<u8>> {
     //get file size
     let mut buffer = Vec::new();
-    file.set_position(RegularFile::END_OF_FILE); //TODO handle this
+    if let Err(e) = file.set_position(RegularFile::END_OF_FILE){
+        return Err(e);
+    };
     buffer.resize(file.get_position().unwrap().unwrap() as usize,0);
-    file.set_position(0); //TODO handle this
-    file.read(&mut buffer); //TODO handle this
-    buffer
+
+    file.set_position(0).unwrap().unwrap();
+    file.read(&mut buffer).unwrap().unwrap();
+    //unwraps should not panic they should only trigger if the if let above does
+    Ok(uefi::Completion::from(buffer))
 }
 
 /// Returned by functions

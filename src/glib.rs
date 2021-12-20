@@ -7,10 +7,10 @@ use uefi::proto::console::gop;
 use uefi::proto::pi::mp;
 
 
-use uefi::proto::console::gop::{BltPixel, BltOp, Mode, GraphicsOutput};
+use uefi::proto::console::gop::{BltPixel, BltOp, Mode};
 use alloc::vec::Vec;
 use core::ops::Deref;
-use uefi::{Completion, Status};
+use uefi::{Completion};
 use uefi::proto::pi::mp::MpServices;
 
 //will be re added at some point
@@ -211,7 +211,7 @@ impl Sprite {
         const MAGIC_NUMBER: [u8;2] = [0x50,0x36]; //ASCII for P6
 
 
-        let mut data = Vec::from(ppm_data); //TODO change to uefi::Status
+        let data = Vec::from(ppm_data); //TODO change to uefi::Status
 
         if data.len() < 9 {
             return Err("file too small")
