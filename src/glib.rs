@@ -338,3 +338,9 @@ impl Deref for Sprite {
         return &*self.data
     }
 }
+
+impl core::ops::DerefMut for Sprite{
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        return &mut *self.data
+    }
+}
