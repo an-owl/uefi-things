@@ -319,7 +319,6 @@ impl Sprite {
                 let scan_start = (scan+y) * self.width; //address for pix 0 in current scanline
                 let far_scan_start = scan * s_width; //same as above but for s
 
-                info!("scan: {}, addr: {}",scan,scan_start);
 
                 //info!("scan: {}, addr: {}",scan,far_scan_start);
 
