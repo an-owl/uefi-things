@@ -16,7 +16,7 @@ use uefi::proto::console::text::Output;
 #[entry]
 fn main(image: Handle, mut st: SystemTable<Boot>) -> Status {
     uefi_services::init(&mut st).unwrap().unwrap(); //ur fucked if this fails anyway
-    let mut log = unsafe {uefi::logger::Logger::new(uefi_wrappers::proto::get_proto::<Output>(st.boot_services()).unwrap().unwrap())};
+    let mut log = unsafe {uefi::logger::Logger::new(uefi_things::proto::get_proto::<Output>(st.boot_services()).unwrap().unwrap())};
     log.disable();
 
     info!("successfully initialized");
@@ -38,9 +38,9 @@ fn main(image: Handle, mut st: SystemTable<Boot>) -> Status {
 pub mod tests{
     use core::fmt::Write;
     use uefi::prelude::*;
-    use uefi_wrappers::fs::{GetFileStatus, get_file_from_path};
+    use uefi_things::fs::{GetFileStatus, get_file_from_path};
     use uefi::proto::media::file::{FileMode, FileAttribute, FileType};
-    use uefi_wrappers::proto::{get_proto,get_proto_handle};
+    use uefi_things::proto::{get_proto,get_proto_handle};
     use test_runner::TestResult;
     use test_runner::TestResult::*;
     use uefi::proto::loaded_image::LoadedImage;
@@ -79,7 +79,7 @@ pub mod tests{
         use uefi::proto::console::text::Color::*;
         let o = get_proto::<Output>(st.boot_services()).unwrap().unwrap();
         let image = get_proto_handle::<LoadedImage>(table,&st.boot_services()).unwrap().unwrap();
-        let args: Vec<String> = uefi_wrappers::env::args(image).unwrap().collect();
+        let args: Vec<String> = uefi_things::env::args(image).unwrap().collect();
 
 
 
@@ -112,7 +112,7 @@ pub mod tests{
         let o = get_proto::<Output>(st.boot_services()).unwrap().unwrap();
         let file_data = match get_file_from_path(fs, "/imp.nsh",file::FileMode::Read,file::FileAttribute::empty()).into_type().unwrap(){
             FileType::Regular(f) => {
-                uefi_wrappers::fs::read_file(f).unwrap().unwrap()
+                uefi_things::fs::read_file(f).unwrap().unwrap()
             }
             FileType::Dir(_) => {
                 return Fail(Status::LOAD_ERROR,"Found Directory")

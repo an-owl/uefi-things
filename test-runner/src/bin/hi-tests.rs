@@ -36,11 +36,11 @@ pub mod tests {
     use core::fmt::Write;
     use test_runner::TestResult;
     use test_runner::TestResult::*;
-    use uefi_wrappers::proto::get_proto;
+    use uefi_things::proto::get_proto;
     use uefi::proto::console::gop::GraphicsOutput;
-    use uefi_wrappers::glib::{GraphicsHandle, Sprite};
+    use uefi_things::glib::{GraphicsHandle, Sprite};
     use uefi::proto::media::fs::SimpleFileSystem;
-    use uefi_wrappers::fs::read_file;
+    use uefi_things::fs::read_file;
     use uefi::proto::media::file::FileType;
     use uefi::proto::console::text::Output;
 
@@ -62,7 +62,7 @@ pub mod tests {
             return Fail(Status::ABORTED, "Only configured for 800x600 resolution");
         }
         let mut bg = Sprite::new(WIDTH, HEIGHT);
-        let ppm_dat = match uefi_wrappers::fs::get_file_from_path(fs,
+        let ppm_dat = match uefi_things::fs::get_file_from_path(fs,
                                                     "/test-img.ppm",
                                                     uefi::proto::media::file::FileMode::Read,
                                                     uefi::proto::media::file::FileAttribute::empty())
@@ -105,7 +105,7 @@ pub mod tests {
 
         let mut g = GraphicsHandle::new(gop,None);
 
-        let bg_file =  match uefi_wrappers::fs::get_file_from_path(fs,
+        let bg_file =  match uefi_things::fs::get_file_from_path(fs,
                                                     "/test-img.ppm",
                                                     uefi::proto::media::file::FileMode::Read,
                                                     uefi::proto::media::file::FileAttribute::empty())
@@ -124,7 +124,7 @@ pub mod tests {
         bg.read_ppm(&bg_file).unwrap();
         drop(bg_file);
 
-        let fg_file =  match uefi_wrappers::fs::get_file_from_path(fs,
+        let fg_file =  match uefi_things::fs::get_file_from_path(fs,
                                                     "/smolspite.ppm",
                                                     uefi::proto::media::file::FileMode::Read,
                                                     uefi::proto::media::file::FileAttribute::empty())

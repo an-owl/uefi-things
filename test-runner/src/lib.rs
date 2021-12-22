@@ -38,7 +38,7 @@ impl Test{
 
 pub fn test_runner(tests: Vec<Test>, table: Handle ,st: &SystemTable<Boot> ){
     use uefi::proto::console::text::Color::*;
-    use uefi_wrappers::proto::get_proto;
+    use uefi_things::proto::get_proto;
     let mut test_comp = Vec::new();
     let o = get_proto::<Output>(&st.boot_services()).unwrap().unwrap();
     writeln!(o,"Running {} tests", tests.len()).unwrap();
