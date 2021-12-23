@@ -50,6 +50,7 @@ enum MpStatus<'mp> {
 ///
 /// When created within a [GraphicsHandle] is is assumed to be the full screen
 
+#[derive(Clone)]
 pub struct Sprite {
     height: usize,
     width: usize,
