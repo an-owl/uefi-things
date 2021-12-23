@@ -98,7 +98,7 @@ impl<'boot> GraphicsHandle<'boot>{
 
     /// Pushes a new frame buffer into self
     pub fn new_buff(&mut self){
-         self.buffers.push(Sprite::new(self.height,self.width));
+         self.buffers.push(Sprite::new(self.width,self.height));
     }
 
     /// Attempts to insert sprite into buffers,
