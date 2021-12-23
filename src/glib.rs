@@ -303,12 +303,17 @@ impl Sprite {
         let mut alt_x = s.width;
         let mut alt_y = s.height;
 
+        if (x > self.width) || y > self.height{
+            return
+        }
+
         //if s too wide
         if x + s.width > self.width{
-            alt_x = (self.width - (x+s.width)) - s.width;
+            //change to s.width - ((x+s.width) - self.width)
+            alt_x = s.width - ((x + s.width) - self.width);
         }
         if y + s.height > self.height{
-            alt_y = (self.width - (y + s.height)) - s.height;
+            alt_y = s.height - ((y + s.height) - self.height);
         }
 
         let mut std_copy = |s_height: usize ,s_width: usize|{
@@ -317,7 +322,7 @@ impl Sprite {
 
                 //contains address offset of first blt in sprites
                 let scan_start = (scan+y) * self.width; //address for pix 0 in current scanline
-                let far_scan_start = scan * s_width; //same as above but for s
+                let far_scan_start = scan * s.width; //same as above but for s
 
 
                 //info!("scan: {}, addr: {}",scan,far_scan_start);
