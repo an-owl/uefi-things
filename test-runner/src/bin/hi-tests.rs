@@ -152,11 +152,11 @@ pub mod tests {
         st.boot_services().stall(1*SECOND);
 
         let (mut width,mut height) = g.get_resolution(); //sets cords to place in bottom right corner
-        width  -= fg.resolution().0;
-        height -= fg.resolution().1;
+        width  -= fg.resolution().0 - 10;
+        height -= fg.resolution().1 - 10;
         writeln!(o,"x: {}",width).unwrap();
         writeln!(o,"y: {}",height).unwrap();
-        st.boot_services().stall(3*SECOND);
+        st.boot_services().stall(SECOND);
         g.draw_to_buff(&fg,0,(width,height));
 
         g.draw(0).unwrap().unwrap();
