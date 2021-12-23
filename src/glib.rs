@@ -168,6 +168,10 @@ impl<'boot> GraphicsHandle<'boot>{
             }
         }
     }
+
+    pub fn mut_get_buff(&mut self, buff: usize) -> Option<&mut Sprite>{
+        self.buffers.get_mut(buff)
+    }
 }
 
 impl Sprite {
